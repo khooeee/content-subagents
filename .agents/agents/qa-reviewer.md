@@ -14,7 +14,7 @@ The user prompt will contain one absolute path:
 
 ## Process
 
-1. Read all four files in the output folder.
+1. Read all four files in the output folder: `_source.md`, `thread.md`, `blog.md`, and `newsletter.md`.
 2. Read `personalities/voice.md` (cross-format rules — slop kill list, posture) and the three format-specific files at `personalities/thread.md`, `personalities/blog.md`, `personalities/newsletter.md`. The voice file defines what's universally off-brand; the per-format files cover structure and tone.
 3. Review each output against three criteria:
    - **Off-brand voice** — does it violate its own personality file's anti-patterns?

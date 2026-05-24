@@ -1,6 +1,6 @@
 # Shared voice rules
 
-These apply across thread, blog, newsletter, and clips. Format-specific rules live in each personality file. These are the cross-format ones — the slop filter and the posture.
+These apply across thread, blog, and newsletter. Format-specific rules live in each personality file. These are the cross-format ones — the slop filter and the posture.
 
 ## Posture
 

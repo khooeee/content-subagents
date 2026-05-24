@@ -10,16 +10,16 @@ This is the same idea as hiring a team instead of one person doing five jobs: sp
 
 ## How to use it
 
-From inside this folder in Claude Code, you have two ways in:
+From inside this folder in Codex, you have two main entry-point skills:
 
 **You already have a transcript file:**
 ```
-/repurpose samples/example-transcript.md
+repurpose samples/example-transcript.md
 ```
 
 **You have a YouTube link:**
 ```
-/yt https://www.youtube.com/watch?v=XXXXXXXXXXX
+yt https://www.youtube.com/watch?v=XXXXXXXXXXX
 ```
 This pulls the transcript via `scripts/fetch_yt.py`, drops it into the run folder as `_source.md`, and then runs the same pipeline. Works on `youtube.com/watch`, `youtu.be/`, and `youtube.com/shorts/` URLs. Requires `pip install -r scripts/requirements.txt` once.
 
@@ -35,14 +35,20 @@ Open the folder. The pieces are ready to copy-paste.
 ## Repo layout
 
 ```
-.claude/
-  agents/                   # subagent definitions (Claude Code convention)
+.agents/
+  agents/                   # subagent definitions
     thread-writer.md
     blog-writer.md
     newsletter-writer.md
     qa-reviewer.md
-  commands/
-    repurpose.md            # the /repurpose slash command
+    transcript-summarizer.md
+  skills/
+    repurpose/
+      SKILL.md              # transcript-to-distribution workflow
+    yt/
+      SKILL.md              # YouTube transcript fetch + distribution workflow
+    redo/
+      SKILL.md              # regenerate one output from an existing drop
 personalities/              # voice/style rules — main tuning surface
   thread.md
   blog.md
@@ -58,7 +64,7 @@ README.md
 
 Edit the files in `personalities/`. That's where voice, structural rules, and anti-patterns live. Adding an anti-pattern ("stop writing `leverage`") is a one-line change and takes effect on the next run.
 
-The subagent files under `.claude/agents/` define *what each agent does* — you shouldn't need to edit those often. The personality files define *how it sounds*.
+The subagent files under `.agents/agents/` define *what each agent does* — you shouldn't need to edit those often. The personality files define *how it sounds*.
 
 ### Make it sound like you, not me
 
@@ -88,16 +94,16 @@ A real run from this repo is checked in at [`samples/example-output/`](samples/e
 
 ## Adding a new format
 
-1. Add a new subagent file at `.claude/agents/<name>-writer.md` following the pattern of the existing ones.
+1. Add a new subagent file at `.agents/agents/<name>-writer.md` following the pattern of the existing ones.
 2. Add a matching personality file at `personalities/<name>.md`.
-3. Add the new subagent name to the parallel dispatch list in `.claude/commands/repurpose.md`.
-4. Teach the QA reviewer about the new file in `.claude/agents/qa-reviewer.md`.
+3. Add the new subagent name to the parallel dispatch list in `.agents/skills/repurpose/SKILL.md`.
+4. Teach the QA reviewer about the new file in `.agents/agents/qa-reviewer.md`.
 
 ## What's intentionally not here
 
 - **Posting to any platform.** This produces drafts, not posts. Copy-paste is the handoff.
-- **Spotify / arbitrary podcast URL ingestion.** YouTube is supported via `/yt`; for other sources, bring the transcript file and use `/repurpose`.
-- **Unbounded revision loops.** QA runs once, the orchestrator dispatches a single auto-revision round for any writer it flagged, then stops. If issues remain after that, run `/redo <writer> <folder>` yourself.
+- **Spotify / arbitrary podcast URL ingestion.** YouTube is supported via `yt`; for other sources, bring the transcript file and use `repurpose`.
+- **Unbounded revision loops.** QA runs once, the orchestrator dispatches a single auto-revision round for any writer it flagged, then stops. If issues remain after that, run `redo <writer> <folder>` yourself.
 
 ## What it does remember across runs
 

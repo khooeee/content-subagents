@@ -1,17 +1,18 @@
 ---
+name: repurpose
 description: Turn a long-form transcript into a full distribution pack (thread, blog, newsletter) with QA
 argument-hint: <path-to-transcript>
 ---
 
-Repurpose the transcript at: $1
+Repurpose the transcript path supplied in the user's request.
 
 You are the orchestrator for a content distribution run. Your job is to coordinate specialist subagents and produce a clean output folder. You are NOT writing any of the content yourself.
 
 ## Step 1 — Validate input
 
-- If `$1` is empty, tell the user the command needs a transcript path and stop.
-- If the file at `$1` doesn't exist, tell the user and stop. Do not guess or substitute.
-- Resolve `$1` to an absolute path for the rest of the run.
+- If the user did not provide a transcript path, tell them this skill needs one and stop.
+- If the file at that path doesn't exist, tell the user and stop. Do not guess or substitute.
+- Resolve the transcript path to an absolute path for the rest of the run.
 
 ## Step 2 — Set up the output folder
 
@@ -35,7 +36,7 @@ Run `wc -w "<absolute-path-to-_source.md>"` to get the word count.
 >
 > Produce a structured brief at `<output-folder>/_brief.md`. Report back with the path.
 
-The brief gives all four writers a compact source of truth, so each one doesn't re-read 25k+ tokens. The full transcript stays at `_source.md` for verbatim quote lookup.
+The brief gives all three writers a compact source of truth, so each one doesn't re-read 25k+ tokens. The full transcript stays at `_source.md` for verbatim quote lookup.
 
 ## Step 3 — Dispatch the three writers in parallel
 
@@ -81,7 +82,7 @@ Each revision call's prompt:
 
 After all revisions return, invoke `qa-reviewer` once more on the same folder (it will overwrite `qa-brief.md` and `qa-findings.json`).
 
-**Hard cap: one revision round.** If post-revision QA still flags issues, do not loop again. The user can run `/redo <writer> <folder>` manually for further iteration.
+**Hard cap: one revision round.** If post-revision QA still flags issues, do not loop again. The user can run `redo <writer> <folder>` manually for further iteration.
 
 Skip this step entirely if the first QA's findings JSON has zero issues across all three files.
 
@@ -101,7 +102,7 @@ Append a section with this exact format:
 
 Use the same date and slug that named the run folder. Future writer runs will read this file as anti-patterns to keep openers and hooks varied across the catalog.
 
-If any of the four files was a `# Failed` stub, skip its line. Do not crash the run for memory-write issues — if it fails, continue to the report and mention "memory not updated" in the final line.
+If any of the three output files was a `# Failed` stub, skip its line. Do not crash the run for memory-write issues — if it fails, continue to the report and mention "memory not updated" in the final line.
 
 After appending, trim `memory/used-hooks.md` to the last 20 entries. Count entries by `## ` section headers — if there are more than 20, delete the oldest ones from the top, keeping only the 20 most recent sections. Rewrite the file in place.
 
@@ -123,4 +124,4 @@ Do not dump any draft contents into the main session. The user will open the fol
 
 ## If a writer subagent fails
 
-If one of the four writers returns an error or fails to write its file, do NOT halt the whole run. Write a stub file at the expected path containing a single line: `# Failed — <short reason>` and continue to QA. Mention the failure in the final report line.
+If one of the three writers returns an error or fails to write its file, do NOT halt the whole run. Write a stub file at the expected path containing a single line: `# Failed — <short reason>` and continue to QA. Mention the failure in the final report line.

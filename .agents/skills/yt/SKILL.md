@@ -1,14 +1,15 @@
 ---
+name: yt
 description: Fetch a YouTube transcript from a link and run the full repurpose pipeline on it. INVOKE PROACTIVELY whenever the user pastes a YouTube URL (youtube.com/watch, youtu.be/, youtube.com/shorts/) and is asking to repurpose, turn into posts, make content from, or distribute it — even if they don't type the slash command. Pass the URL as the argument.
 argument-hint: <youtube-url>
 ---
 
-Paste-a-link version of `/repurpose`. You are the orchestrator. You are NOT writing any of the content yourself.
+Paste-a-link version of `repurpose`. You are the orchestrator. You are NOT writing any of the content yourself.
 
 ## Step 1 — Validate input
 
-- If `$1` is empty, tell the user the command needs a YouTube URL and stop.
-- If `$1` doesn't look like a YouTube URL (no `youtube.com` or `youtu.be`), tell the user and stop. Do not guess.
+- If the user did not provide a YouTube URL, tell them this skill needs one and stop.
+- If the URL doesn't look like a YouTube URL (no `youtube.com` or `youtu.be`), tell the user and stop. Do not guess.
 
 ## Step 2 — Set up the output folder
 
@@ -21,7 +22,7 @@ Paste-a-link version of `/repurpose`. You are the orchestrator. You are NOT writ
 Run:
 
 ```
-python3 scripts/fetch_yt.py "$1" "<absolute-folder>/_source.md"
+python3 scripts/fetch_yt.py "<youtube-url>" "<absolute-folder>/_source.md"
 ```
 
 - If the script exits non-zero, print the stderr message to the user and stop. Do not continue to writers.
@@ -42,14 +43,13 @@ Run `wc -w "<absolute-path-to-_source.md>"` to get the word count.
 
 The brief becomes the writers' compact source of truth. The full transcript stays at `_source.md` for verbatim quote lookup.
 
-## Step 4 — Dispatch the four writers in parallel
+## Step 4 — Dispatch the three writers in parallel
 
-Invoke these four subagents in a SINGLE message with four parallel Task tool calls (not sequential):
+Invoke these three subagents in a SINGLE message with three parallel Task tool calls (not sequential):
 
 - `thread-writer`
 - `blog-writer`
 - `newsletter-writer`
-- `clips-writer`
 
 Each call's prompt should be exactly this template (with the absolute paths filled in):
 
@@ -62,17 +62,17 @@ Running them in parallel is non-negotiable.
 
 ## Step 5 — Run QA
 
-Once all four writers have returned, invoke the `qa-reviewer` subagent with this prompt:
+Once all three writers have returned, invoke the `qa-reviewer` subagent with this prompt:
 
 > Output folder: `<absolute-path-to-run-folder>`
 >
-> Read _source.md, thread.md, blog.md, newsletter.md, clips.md. Read the four personality files under personalities/. Write qa-brief.md with your findings. Report back with the path and total issue count.
+> Read _source.md, thread.md, blog.md, newsletter.md. Read the three personality files under personalities/. Write qa-brief.md with your findings. Report back with the path and total issue count.
 
 ## Step 6 — Revision loop (one round, automatic)
 
 After QA returns, read `<folder>/qa-findings.json`.
 
-For each writer key (`thread`, `blog`, `newsletter`, `clips`) whose `issues` array is non-empty, invoke its writer subagent in revision mode. Dispatch all needed revisions in a SINGLE message with parallel Task tool calls.
+For each writer key (`thread`, `blog`, `newsletter`) whose `issues` array is non-empty, invoke its writer subagent in revision mode. Dispatch all needed revisions in a SINGLE message with parallel Task tool calls.
 
 Each revision call's prompt:
 
@@ -87,9 +87,9 @@ Each revision call's prompt:
 
 After all revisions return, invoke `qa-reviewer` once more on the same folder.
 
-**Hard cap: one revision round.** If post-revision QA still flags issues, do not loop again. The user can run `/redo <writer> <folder>` manually.
+**Hard cap: one revision round.** If post-revision QA still flags issues, do not loop again. The user can run `redo <writer> <folder>` manually.
 
-Skip this step if the first QA's findings JSON has zero issues across all four files.
+Skip this step if the first QA's findings JSON has zero issues across all three files.
 
 ## Step 6b — Update used-hooks memory
 
@@ -103,9 +103,6 @@ Format:
 - thread opener: <first non-blank line of thread.md>
 - blog opener: <first sentence of opening paragraph of blog.md, after the H1>
 - newsletter opener: <first sentence of newsletter.md>
-- clip 1 hook: <text after "## Clip 1 — ">
-- clip 2 hook: <text after "## Clip 2 — ">
-- clip 3 hook: <text after "## Clip 3 — ">
 ```
 
 Skip lines for any file that's a `# Failed` stub. Do not crash the run for memory-write issues — mention "memory not updated" in the final report if the write fails.
