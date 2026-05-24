@@ -14,12 +14,12 @@ From inside this folder in Codex, you have two main entry-point skills:
 
 **You already have a transcript file:**
 ```
-repurpose samples/example-transcript.md
+/repurpose samples/example-transcript.md
 ```
 
 **You have a YouTube link:**
 ```
-yt https://www.youtube.com/watch?v=XXXXXXXXXXX
+/yt https://www.youtube.com/watch?v=XXXXXXXXXXX
 ```
 This pulls the transcript via `scripts/fetch_yt.py`, drops it into the run folder as `_source.md`, and then runs the same pipeline. Works on `youtube.com/watch`, `youtu.be/`, and `youtube.com/shorts/` URLs. Requires `pip install -r scripts/requirements.txt` once.
 
@@ -102,7 +102,7 @@ A real run from this repo is checked in at [`samples/example-output/`](samples/e
 ## What's intentionally not here
 
 - **Posting to any platform.** This produces drafts, not posts. Copy-paste is the handoff.
-- **Spotify / arbitrary podcast URL ingestion.** YouTube is supported via `yt`; for other sources, bring the transcript file and use `repurpose`.
+- **Spotify / arbitrary podcast URL ingestion.** YouTube is supported via `yt`; for other sources, bring the transcript file and use `/repurpose`.
 - **Unbounded revision loops.** QA runs once, the orchestrator dispatches a single auto-revision round for any writer it flagged, then stops. If issues remain after that, run `redo <writer> <folder>` yourself.
 
 ## What it does remember across runs
